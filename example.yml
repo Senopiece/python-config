@@ -1,0 +1,9 @@
+bot<pyro>:
+  token: dfh
+  app:id: 3
+  app:hash: hehe
+
+agent<anthropic>:
+  model: $ANTHROPIC_MODEL
+  proxy: http://$MODEL_PROXY
+  key: kek
