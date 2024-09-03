@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="python-config",
+    name="python_config",
     version="1.0",
     description="Library for loading yml configurations",
     author="Vitaly Mahonin",
