@@ -8,8 +8,42 @@ from yaml import full_load
 from dotenv import load_dotenv
 
 
+class ImplRegistry:
+    _impls: Dict[str, type["ImplRegistry"]]
+
+    @classmethod
+    def construct(cls, config: Any, *args: Any, **kwargs: Any) -> Any:
+        return cls._impls[config.__class__.__qualname__.lower()].construct(
+            config, *args, **kwargs
+        )
+
+    def __init_subclass__(cls, **kwargs: Any):
+        super().__init_subclass__(**kwargs)
+
+        if hasattr(cls, "_impls"):
+
+            base = cls.__base__
+            assert base is not None and issubclass(
+                base, ImplRegistry
+            ), f"{cls} must inherit from ImplRegistry"
+
+            if cls.construct.__code__ == base.construct.__code__:
+                raise NotImplementedError(f"{cls}.construct(...) is not implemented")
+
+            cls._impls[cls.__qualname__.lower()] = cls
+        else:
+            cls._impls = {}
+
+
+class EmptyConfig:
+    @classmethod
+    def _parse(cls, raw: None):
+        assert raw is None, "expected a null"
+        return cls()
+
+
 @dataclass
-class ConfImplBody:
+class _ConfImplBody:
     impl: str
     body: Any
 
@@ -22,32 +56,19 @@ class ConfImplBody:
                 if isinstance(k, str):
                     match = re.match(r"([^<]+)<([^>]+)>", k)
                     if match is not None:
-                        res[match.group(1)] = ConfImplBody(
+                        res[match.group(1)] = _ConfImplBody(
                             match.group(2),
-                            ConfImplBody.apply(v),
+                            _ConfImplBody.apply(v),
                         )
                         continue
-                res[k] = ConfImplBody.apply(v)
+                res[k] = _ConfImplBody.apply(v)
 
             return res  # type: ignore
 
         elif isinstance(raw, list):
-            return [ConfImplBody.apply(e) for e in raw]  # type: ignore
+            return [_ConfImplBody.apply(e) for e in raw]  # type: ignore
 
         return raw
-
-
-def inject_environs(raw: Any) -> Any:
-    if isinstance(raw, dict):
-        return {inject_environs(k): inject_environs(v) for k, v in raw.items()}  # type: ignore
-
-    elif isinstance(raw, list):
-        return [inject_environs(e) for e in raw]  # type: ignore
-
-    elif isinstance(raw, str):
-        return Template(raw).safe_substitute(os.environ)
-
-    return raw
 
 
 class ParsingConfigException(Exception):
@@ -102,7 +123,7 @@ class VariableConfig(_ConstructableConfig, _ParsableConfig):
     @classmethod
     def construct(cls, raw: Any, at: str):
         try:
-            if isinstance(raw, ConfImplBody):
+            if isinstance(raw, _ConfImplBody):
                 impl = cls._impls.get(raw.impl)
 
                 if impl is None:
@@ -126,10 +147,23 @@ class VariableConfig(_ConstructableConfig, _ParsableConfig):
             cls._impls = {}
 
 
-load_dotenv()
+def _inject_environs(raw: Any) -> Any:
+    if isinstance(raw, dict):
+        return {_inject_environs(k): _inject_environs(v) for k, v in raw.items()}  # type: ignore
+
+    elif isinstance(raw, list):
+        return [_inject_environs(e) for e in raw]  # type: ignore
+
+    elif isinstance(raw, str):
+        return Template(raw).safe_substitute(os.environ)
+
+    return raw
 
 
 def load_config(config_path: str):
     with open(config_path, "r") as f:
         data = full_load(f)
-    return ConfImplBody.apply(inject_environs(data))
+    return _ConfImplBody.apply(_inject_environs(data))
+
+
+load_dotenv()
