@@ -12,8 +12,8 @@ class ImplRegistry:
     _impls: Dict[str, type["ImplRegistry"]]
 
     @classmethod
-    def construct(cls, config: Any, *args: Any, **kwargs: Any) -> Any:
-        return cls._impls[config.__class__.__qualname__.lower()].construct(
+    async def construct(cls, config: Any, *args: Any, **kwargs: Any) -> Any:
+        return await cls._impls[config.__class__.__qualname__.lower()].construct(
             config, *args, **kwargs
         )
 
