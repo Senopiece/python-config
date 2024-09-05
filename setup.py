@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="configurable",
-    version="1.1",
+    version="1.2",
     description="Library for loading yml configurations",
     author="Vitaly Mahonin",
     author_email="nabuki@vk.com",
