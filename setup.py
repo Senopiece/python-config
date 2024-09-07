@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="configurable",
+    name="configurik",
     version="1.2",
     description="Library for loading yml configurations",
     author="Vitaly Mahonin",
