@@ -136,8 +136,12 @@ class InMemory(Cache):
 
 In this example, the `Cache` class inherits from `ImplRegistry`, which allows you to construct the appropriate class based on the configuration through `Cache.construct(config)`.
 
-### Example YAML Configuration
 
+### Parsing Configurations
+
+You can load and parse your YAML configuration file using `load_config` and `StaticConfig.construct`.
+
+`config.yml`
 ```yaml
 # The configuration models (e.g. `redis`, `inmemory`) are resolved by using `<...>` with lowercase class name.
 cache<redis>:
@@ -146,10 +150,6 @@ cache<redis>:
 
 # and others...
 ```
-
-### Parsing Configurations
-
-You can load and parse your YAML configuration file using `load_config` and `StaticConfig.construct`.
 
 `main.py`
 ```python
