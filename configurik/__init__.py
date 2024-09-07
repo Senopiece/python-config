@@ -13,6 +13,11 @@ class ImplRegistry:
 
     @classmethod
     async def construct(cls, config: Any, *args: Any, **kwargs: Any) -> Any:
+        """
+        Must only be called on the first order descendants of ImplRegistry (aka the interface),
+        with the second order descendants expected to be the actual implementations
+        this method constructs needed implementation depending on the configuration passed
+        """
         return await cls._impls[config.__class__.__qualname__.lower()].construct(
             config, *args, **kwargs
         )
@@ -72,6 +77,10 @@ class _ConfImplBody:
 
 
 class ParsingConfigException(Exception):
+    """
+    A Exception occurred while parsing with parsing chain information augmented
+    """
+
     def __init__(self, at: str, e: Exception) -> None:
         self.at = at
         self.e = e
@@ -86,12 +95,25 @@ class ParsingConfigException(Exception):
 class _ConstructableConfig:
     @classmethod
     def construct_at(cls, raw: Dict[Any, Any], at: str):
+        """
+        Prefer this to construct any time object can be parsed form a key of a dict
+        Using this will ensure that you didn't forgot to mention a point
+        in parsing chain so that error report will be better
+        """
         assert isinstance(raw, dict), "expected a dict"
         return cls.construct(raw[at], at)
 
     @classmethod
     @abstractmethod
-    def construct(cls, raw: Any, at: str) -> Any: ...
+    def construct(cls, raw: Any, at: str) -> Any:
+        """
+        Submit raw data to be parsed from,
+        and mention a point 'at' in the parsing chain
+        Parsing chain is used in case of error to help to locate a error
+
+        NOTE: for a VariableConfig this will make first make a resolution
+        """
+        pass
 
 
 class _ParsableConfig:
