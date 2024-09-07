@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="configurik",
-    version="1.2.1",
+    version="1.3",
     description="Library for loading yml configurations",
     author="Vitaly Mahonin",
     author_email="nabuki@vk.com",
