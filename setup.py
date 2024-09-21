@@ -5,13 +5,14 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="configurik",
-    version="1.3",
+    version="1.3.1",
     description="Library for loading yml configurations",
     author="Vitaly Mahonin",
     author_email="nabuki@vk.com",
     packages=find_packages(),
     install_requires=[
         "python-dotenv>=1.0.1,<2.0.0",
+        "PyYAML>=6.0.1,<7.0.0",
     ],
     python_requires=">=3.8",
     long_description=long_description,

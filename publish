@@ -1,0 +1,41 @@
+#!/bin/bash
+
+set -e
+
+PACKAGE_NAME="configurik"
+PYPI_REPO_URL="https://upload.pypi.org/legacy/"  # Change to test.pypi.org/legacy/ for testing
+DIST_DIR="dist"
+
+clean_build() {
+    echo "Cleaning old builds..."
+    rm -rf build/ "$DIST_DIR"/ *.egg-info
+}
+
+build_package() {
+    echo "Building the package..."
+    python setup.py sdist bdist_wheel
+}
+
+upload_package() {
+    echo "Uploading the package to PyPI..."
+    twine upload --repository-url "$PYPI_REPO_URL" "$DIST_DIR"/*
+}
+
+check_twine_installed() {
+    if ! command -v twine &> /dev/null
+    then
+        echo "Twine could not be found, installing..."
+        pip install twine
+    else
+        echo "Twine is already installed."
+    fi
+}
+
+echo "Starting the build and deployment process for $PACKAGE_NAME..."
+
+clean_build
+check_twine_installed
+build_package
+upload_package
+
+echo "Deployment to PyPI complete."
